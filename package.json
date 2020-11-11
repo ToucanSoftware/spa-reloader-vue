@@ -15,10 +15,8 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "sockjs-client": "^1.5.0",
     "vue": "^2.6.11",
-    "vuex": "^3.4.0",
-    "webstomp-client": "^1.2.6"
+    "vuex": "^3.4.0"
   },
   "repository": {
     "type": "git",
