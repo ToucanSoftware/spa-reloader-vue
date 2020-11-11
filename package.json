@@ -2,6 +2,7 @@
   "name": "spa-reloader-vue",
   "version": "0.0.1",
   "description": "SPA Reloader Vue Components",
+  "private": false,
   "main": "dist/spa-reloader-vue.common.js",
   "files": [
     "dist/*"
@@ -10,22 +11,26 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "build-package": "vue-cli-service build --target lib --name spa-reloader-vue ./src/main.js"
+    "build-package": "vue-cli-service build --target lib --name spa-reloader-vue ./src/plugin/spa-reloader-plugin.js"
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "sockjs-client": "^1.5.0",
     "vue": "^2.6.11",
-    "vuex": "^3.4.0"
+    "vuex": "^3.4.0",
+    "webstomp-client": "^1.2.6"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ToucanSoftware/spa-reloader-vue.git"
   },
   "keywords": [
+    "toucansoft",
     "toucansoftware",
     "vue",
     "reloader",
-    "spa"
+    "spa",
+    "spa-reloader-vue"
   ],
   "author": "Jorge Villaverde <jorge.villaverde@toucansoftware.io>",
   "contributors": [
