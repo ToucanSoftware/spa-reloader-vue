@@ -1,26 +1,29 @@
-const methods = {
+import { IsFunction, IsURL, IsLocalStorageAvailable } from "./utils";
+
+const SPA_LOCALSTORAGE_ITEM = "spa-last-event";
+
+const spaplugin = {
   /**
    * Connect to websockets
    * @param {*} options
    */
   $webSocketsConnect(options) {
     if (!options) {
-      return null;
+      return;
     }
-    console.log("Connecting to SPA Relaoad at: ", options.spaReloaderURL);
-    let ws = new WebSocket(options.spaReloaderURL);
-    ws.onopen = () => {
+    this.ws = new WebSocket(options.spaReloaderURL);
+    this.ws.onopen = () => {
       console.log("Connected to SPA Relaoad at: ", options.spaReloaderURL);
       // Restart reconnect interval
       options.reconnectInterval = options.reconnectInterval || 1000;
     };
 
-    ws.onmessage = function(event) {
+    this.ws.onmessage = function(event) {
       // New message from the backend - use JSON.parse(event.data)
-      methods.handleNotification(event);
+      spaplugin.handleNotification(event);
     };
 
-    ws.onclose = function(event) {
+    this.ws.onclose = function(event) {
       console.log(
         "Closing Connection to SPA Relaoad at: ",
         options.spaReloaderURL
@@ -34,45 +37,112 @@ const methods = {
               // Reconnect interval can't be > x seconds
               options.reconnectInterval += 1000;
             }
-            methods.$webSocketsConnect();
+            spaplugin.$webSocketsConnect();
           }, options.reconnectInterval);
         }
       }
     };
 
-    ws.onerror = function(error) {
+    this.ws.onerror = function(error) {
       console.log(error);
-      ws.close();
+      this.ws.close();
     };
-    return ws;
+  },
+
+  /**
+   * Save the callback function
+   * @param {*} callback
+   */
+  setCallback(callback) {
+    this.callback = callback;
   },
 
   /*
    * Handle notifications
    */
   handleNotification(event) {
-    console.log(event);
-    //options.store.dispatch('notifications/setNotifications', params.data)
-  },
+    const receivedEvent = JSON.parse(event.data);
 
-  $webSocketsDisconnect() {
-    // Our custom disconnect event
-    //ws.close();
-  },
-
-  $hashChanged(oldHash, newHash) {
-    if (oldHash !== newHash) {
-      return true;
+    let storedEvent = this.retrieveObjectFromLocalstorage();
+    /**
+     * If there is not stored object, fire notification.
+     */
+    if (!storedEvent) {
+      this.callback(receivedEvent, null);
+      this.saveObjectToLocalstorage(receivedEvent);
     } else {
-      return false;
+      /**
+       * Compare received event with stored event
+       */
+      if (this.evalChangeState(receivedEvent, storedEvent)) {
+        this.callback(receivedEvent, storedEvent);
+        this.saveObjectToLocalstorage(receivedEvent);
+      }
     }
   },
-};
 
-const DEFAULTS = {
-  spaReloaderURL: "localhost:8081",
-  initHash: "",
-  reconnectInterval: 1000,
+  /**
+   * Compare the stored event and the recevied event and returns true if we need
+   * to fire an update event.
+   * @param {*} receivedEvent
+   * @param {*} storedEvent
+   */
+  evalChangeState(receivedEvent, storedEvent) {
+    if (storedEvent === undefined || storedEvent === null) {
+      return true;
+    }
+    if (receivedEvent === undefined || receivedEvent == null) {
+      return false;
+    }
+    /* Check for timestamps */
+    if (
+      storedEvent.created_at !== undefined &&
+      storedEvent.created_at !== null &&
+      receivedEvent.created_at !== undefined &&
+      receivedEvent.created_at !== null
+    ) {
+      storedEvent.created_at = new Date(storedEvent.created_at);
+      receivedEvent.created_at = new Date(receivedEvent.created_at);
+      if (
+        receivedEvent.created_at.getTime() < storedEvent.created_at.getTime()
+      ) {
+        return false;
+      }
+    }
+    if (storedEvent.current_sha256 !== receivedEvent.current_sha256) {
+      return true;
+    }
+    return false;
+  },
+
+  /**
+   * Marshalls an object and saves it to the local storage.
+   * @param {*} obj
+   */
+  saveObjectToLocalstorage(obj) {
+    let marshalledObject = JSON.stringify(obj);
+    localStorage.setItem(SPA_LOCALSTORAGE_ITEM, marshalledObject);
+  },
+
+  /**
+   * Retrieves an event object fron the localstorage.
+   */
+  retrieveObjectFromLocalstorage() {
+    let unmarshalledObject = localStorage.getItem(SPA_LOCALSTORAGE_ITEM);
+    if (!unmarshalledObject) return null;
+    let marshalledObject = JSON.parse(unmarshalledObject);
+    return marshalledObject;
+  },
+
+  /**
+   * Disconect from websocket.
+   */
+  $webSocketsDisconnect() {
+    // Our custom disconnect event
+    if (this.ws) {
+      this.ws.close();
+    }
+  },
 };
 
 export default {
@@ -83,34 +153,32 @@ export default {
    *   - spaReloaderURL: URL of the websocket server
    */
   install(Vue, options = {}) {
-    console.log("Plugin Options: ", options);
-
-    const { spaReloaderURL } = options;
+    const { spaReloaderURL, callback } = options;
 
     // Validate options
-    if (!spaReloaderURL)
+
+    if (!IsURL(spaReloaderURL)) {
       throw new Error(
         "Invalid SPA Reloader URL, please supply the URL where SPA Reloader is running."
       );
+    }
+    if (!IsFunction(callback)) {
+      throw new Error(
+        "Invalid callback function, please supply a callback function."
+      );
+    }
+    if (!IsLocalStorageAvailable()) {
+      throw new Error("Localstorage is not available.");
+    }
+
+    spaplugin.setCallback(callback);
+    spaplugin.$webSocketsConnect(options);
+    console.log("Connected to websocket");
 
     // create a mixin
     Vue.mixin({
-      created() {
-        // console.log('user options', options.initHash);
-        console.log("default options", DEFAULTS.initHash);
-        // console.log('selected options', currentHash);
-      },
-
-      mounted() {
-        // call method to star listening to websocket
-        console.log("mounted. aca me quedo escuchando el websocket");
-        methods.$webSocketsConnect(options);
-        // isHashNew = methods.$hashChanged(currentHash, response.sha256)
-        // if (isHashNew) {
-        //     currentHash = response.sha256;
-        //     console.log('hash has changed!')
-        // }
-      },
+      created() {},
+      beforeDestroy() {},
     });
   },
 };
