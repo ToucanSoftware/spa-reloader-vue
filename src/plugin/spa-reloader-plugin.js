@@ -49,12 +49,27 @@ const spaplugin = {
     };
   },
 
-  /**
-   * Save the callback function
-   * @param {*} callback
-   */
-  setCallback(callback) {
-    this.callback = callback;
+  addSpaSubscriber(callback) {
+    if (this.cache === undefined || this.cache === null) {
+      this.cache = [];
+    }
+    if (IsFunction(callback)) {
+      this.cache.push(callback);
+    }
+  },
+
+  emitEvent(receivedEvent, storedEvent) {
+    if (
+      this.cache === undefined ||
+      this.cache === null ||
+      this.cache.length === 0
+    ) {
+      return;
+    }
+    for (let i = 0; i < this.cache.length; i++) {
+      let callback = this.cache[i];
+      callback(receivedEvent, storedEvent);
+    }
   },
 
   /*
@@ -68,14 +83,14 @@ const spaplugin = {
      * If there is not stored object, fire notification.
      */
     if (!storedEvent) {
-      this.callback(receivedEvent, null);
+      this.emitEvent(receivedEvent, null);
       this.saveObjectToLocalstorage(receivedEvent);
     } else {
       /**
        * Compare received event with stored event
        */
       if (this.evalChangeState(receivedEvent, storedEvent)) {
-        this.callback(receivedEvent, storedEvent);
+        this.emitEvent(receivedEvent, storedEvent);
         this.saveObjectToLocalstorage(receivedEvent);
       }
     }
@@ -153,7 +168,7 @@ export default {
    *   - spaReloaderURL: URL of the websocket server
    */
   install(Vue, options = {}) {
-    const { spaReloaderURL, callback } = options;
+    const { spaReloaderURL } = options;
 
     // Validate options
 
@@ -162,23 +177,20 @@ export default {
         "Invalid SPA Reloader URL, please supply the URL where SPA Reloader is running."
       );
     }
-    if (!IsFunction(callback)) {
-      throw new Error(
-        "Invalid callback function, please supply a callback function."
-      );
-    }
     if (!IsLocalStorageAvailable()) {
       throw new Error("Localstorage is not available.");
     }
-
-    spaplugin.setCallback(callback);
+    /* Connect to websocket */
     spaplugin.$webSocketsConnect(options);
-    console.log("Connected to websocket");
 
     // create a mixin
     Vue.mixin({
       created() {},
       beforeDestroy() {},
     });
+
+    Vue.prototype.$spaSubscribe = function(callback) {
+      spaplugin.addSpaSubscriber(callback);
+    };
   },
 };
