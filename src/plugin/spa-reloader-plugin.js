@@ -124,7 +124,9 @@ const spaplugin = {
         return false;
       }
     }
-    if (storedEvent.current_sha256 !== receivedEvent.current_sha256) {
+    if (
+      storedEvent.current_image.sha256 !== receivedEvent.current_image.sha256
+    ) {
       return true;
     }
     return false;
