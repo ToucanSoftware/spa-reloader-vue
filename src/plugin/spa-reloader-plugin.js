@@ -13,7 +13,7 @@ const spaplugin = {
     }
     this.ws = new WebSocket(options.spaReloaderURL);
     this.ws.onopen = () => {
-      console.log("Connected to SPA Relaoad at: ", options.spaReloaderURL);
+      console.log("Connected to SPA Reloader at: ", options.spaReloaderURL);
       // Restart reconnect interval
       options.reconnectInterval = options.reconnectInterval || 1000;
     };
@@ -25,7 +25,7 @@ const spaplugin = {
 
     this.ws.onclose = function(event) {
       console.log(
-        "Closing Connection to SPA Relaoad at: ",
+        "Closing Connection to SPA Reloader at: ",
         options.spaReloaderURL
       );
       if (event) {
