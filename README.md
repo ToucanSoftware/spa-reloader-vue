@@ -34,3 +34,7 @@ Add a new callback function to be executed every time an image update event is c
 // everywhere
 this.$spaSubscribe(this.myCallbackFunction);
 ```
+
+## Demo
+
+Please, take a look at the Demo Project [here](https://github.com/ToucanSoftware/spa-reloader-demo).
