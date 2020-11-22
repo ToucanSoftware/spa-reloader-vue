@@ -125,11 +125,26 @@ const spaplugin = {
       }
     }
     if (
-      storedEvent.current_image.sha256 !== receivedEvent.current_image.sha256
+      receivedEvent.current_image !== undefined &&
+      receivedEvent.current_image !== null &&
+      receivedEvent.current_image.sha256 !== undefined &&
+      receivedEvent.current_image.sha256 !== null
     ) {
-      return true;
+      if (
+        storedEvent.current_image !== undefined &&
+        storedEvent.current_image !== null &&
+        storedEvent.current_image.sha256 !== undefined &&
+        storedEvent.current_image.sha256 !== null
+      ) {
+        if (
+          storedEvent.current_image.sha256 ===
+          receivedEvent.current_image.sha256
+        ) {
+          return false;
+        }
+        return true;
+      }
     }
-    return false;
   },
 
   /**
