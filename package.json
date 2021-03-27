@@ -29,10 +29,10 @@
     "spa",
     "spa-reloader-vue"
   ],
-  "author": "Jorge Villaverde <jorge.villaverde@toucansoftware.io>",
+  "author": "Jorge Villaverde <jorge.villaverde@toucansoft.io>",
   "contributors": [
-    "Jorge Villaverde <jorge.villaverde@toucansoftware.io>",
-    "Fernanda Fernandez <fernanda.fernandez@toucansoftware.io>"
+    "Jorge Villaverde <jorge.villaverde@toucansoft.io>",
+    "Fernanda Fernandez <fernanda.fernandez@toucansoft.io>"
   ],
   "license": "Apache-2.0",
   "licenses": [
