@@ -1,7 +1,6 @@
 # SPA Reloader for Vue
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FToucanSoftware%2Fspa-reloader-vue.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FToucanSoftware%2Fspa-reloader-vue?ref=badge_shield)
-
 [![NPM version](https://badge.fury.io/js/spa-reloader-vue.svg)](http://badge.fury.io/js/spa-reloader-vue)
 
 Vue Plugin for [SPA Reloader](https://github.com/ToucanSoftware/spa-reloader).
