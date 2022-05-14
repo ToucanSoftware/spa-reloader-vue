@@ -1,6 +1,6 @@
 {
   "name": "spa-reloader-vue",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "SPA Reloader Vue Components",
   "private": false,
   "main": "dist/spa-reloader-vue.common.js",
